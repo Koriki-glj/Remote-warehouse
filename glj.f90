@@ -301,9 +301,11 @@
 		end do
 	end do
 	close(2)
-	!write(*,*)'扩展后金字塔板的yt(5,k)数据', (yt(5,k),k=1,nytemp)
+	write(*,*)'扩展后金字塔板的yt(5,k)数据', (yt(5,k),k=1,nytemp)
+	!write(*,*)'扩展后金字塔板的xt(k,5)数据', (xt(k,5),k=1,nxtemp)
 	!write(*,*)'扩展后金字塔板的zt(k,5)数据', (zt(k,5),k=1,nxtemp)
 	!write(*,*)'扩展后金字塔板的zt(5,k)数据', (zt(5,k),k=1,nytemp)
+	pause
 	!---------金字塔型强化管外形----------------------------------------
 	do i=1,nxtemp
 		do j=1,nytemp
@@ -353,7 +355,7 @@
 	!流体域包括等腰三角形和两个流体小块
 	!区块1
 	m=1
-	nxt(1)=int(nxtemp/4)+1
+	nxt(1)=int(nxtemp/4)+1   !121
 	nyt(1)=nxt(1)
 	nzt(1)=nytemp
 	!--------------------------------------------------------------------
@@ -375,7 +377,7 @@
 	end do
 	!--------------------------------------------------------------------
 	do i=1,2*n-1
-		xss(1,i)=0.0+da*sin(pi/4.0)*cos(pi/4.0)*sb(1,i)
+		xss(1,i)=0.0+da*sin(pi/4.0)*cos(pi/4.0)*sb(1,i)    !da是等腰三角形的腰长
 		yss(1,i)=0.0-da*sin(pi/4.0)*sin(pi/4.0)*sb(1,i)
 		xss(2,i)=-0.5*da+da*sb(1,i)
 		yss(2,i)=sin(pi/4.0)*da*sin(pi/4.0)
@@ -435,7 +437,7 @@
 	close(2)
 	!--------------------------------------------------------------------
 	open(2,file='yt(1,k)的数据.txt')
-	write(2,*) (yt(1,k),k=1,nzt(m))
+	write(2,*) (yt(1,k),k=1,nzt(m))  !隐含式循环
 	close(2)
 	!--------------------------------------------------------------------
 	jj1=int(nxtemp/4)/2+1
@@ -463,7 +465,7 @@
 				yss(2,j)=ytnew1(j-jj1+1,k)
 			end if
 			xss(1,j)=0.5*da
-			yss(1,j)=-0.5*da+da*float(j-1)/float(nyt(m)-1)
+			yss(1,j)=-0.5*da+da*float(j-1)/float(nyt(m)-1)   !y方向的节点数未加密
 			do i=1,nxt(m)
 				xlast(i,j,k,m)=(1.0-s(i))*xss(1,j)+s(i)*xss(2,j)
 				ylast(i,j,k,m)=(1.0-s(i))*yss(1,j)+s(i)*yss(2,j)
@@ -772,8 +774,8 @@
 	end do
 	!--------------------------------------------------------------------
 	do i=1,2*n-1
-		xss(1,i)=0.0+da*sin(pi/4.0)*cos(pi/4.0)*sb(1,i)+(dm/2.0+zd2)*cos(pi/4.0)
-		yss(1,i)=0.0-da*sin(pi/4.0)*sin(pi/4.0)*sb(1,i)+(dm/2.0+zd2)*sin(pi/4.0)
+		xss(1,i)=(dm/2.0+zd2)*cos(pi/4.0)+da*sin(pi/4.0)*cos(pi/4.0)*sb(1,i)
+		yss(1,i)=(dm/2.0+zd2)*sin(pi/4.0)-da*sin(pi/4.0)*sin(pi/4.0)*sb(1,i)
 		xss(2,i)=-0.5*da+da*sb(1,i)+(dm/2.0+zd2)*cos(pi/4.0)
 		yss(2,i)=sin(pi/4.0)*da*sin(pi/4.0)+(dm/2.0+zd2)*sin(pi/4.0)
 	end do
