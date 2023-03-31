@@ -2,3 +2,12 @@
 
 
 2222测试文件
+
+如何更新仓库文件：
+git status
+
+git add -A
+
+git commit -a -m "update"
+
+git push origin master -f
