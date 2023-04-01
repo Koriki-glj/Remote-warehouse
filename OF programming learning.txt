@@ -1,0 +1,153 @@
+1.Data reading
+
+Source file content：
+
+#include "fvCFD.H"
+
+int main(int argc, char *argv[])
+{
+#include "setRootCase.H"
+#include "createTime.H"
+#include "createMesh.H"
+
+	IOdictionary custrmProperties
+		(
+		 IOobject
+		 (
+		 "custrmProperties",
+		 runTime.constant(),
+		 mesh,
+		 IOobject::MUST_READ,
+		 IOobject::NO_WRITE
+		 )
+		);
+	word someword;
+	custrmProperties.lookup("someword") >> someword;
+
+	scalar someScalar(custrmProperties.lookupOrDefault<scalar>("someScalar",1.0));
+
+	List<scalar> someList(custrmProperties.lookup("someList"));
+
+	HashTable<vector,word> someHashTable(custrmProperties.lookup("someHashTable"));
+
+	bool someBool(custrmProperties.lookupOrDefault<Switch>("someBool",true));
+
+	Info << nl <<"读取的数据是："<< endl
+		<<"someword:" <<someword <<endl
+		<<"someScalar:"<<someScalar<<endl
+		<<"someList:" <<  someList << endl
+		<< "someHashTable:" <<  someHashTable << endl
+		<< "someBool:" << someBool << endl;
+	Info <<endl;
+
+	return 0;
+
+}
+
+Make/files file contents：
+
+demo1.C
+
+EXE = demo1
+
+Make/options file contents：
+
+EXE_INC = \
+       -I$(FOAM_SRC)/finiteVolume/lnInclude \
+       -I$(FOAM_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+         -lfiniteVolume \ 
+         -lmeshTools
+
+Case:./constant/custrmProperties file contents：
+
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  6
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      custrmProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+someword myword;
+someScalar 0.02;
+someBool off;
+someList (0 1 2 3 4 5);
+someHashTable
+(
+  key0 (0 0 0)
+  key1 (1 0 0)
+);
+
+
+2.Data write
+
+Source file content：
+
+#include "fvCFD.H"
+
+int main(int argc, char *argv[])
+{
+#include "setRootCase.H"
+#include "createTime.H"
+#include "createMesh.H"
+fileName outputDir = mesh.time().path() / "postProcessing";
+mkDir(outputDir);
+autoPtr<OFstream> outputFilePtr;
+outputFilePtr.reset(new OFstream(outputDir / "custrmFile.txt"));
+outputFilePtr() << "开始写入："<< endl;
+outputFilePtr() << "0 1 2 3 4 5"<< endl;
+HashTable<vector,word> someHashTable;
+someHashTable.insert("row 1", vector(1,0,0));
+someHashTable.insert("row 2", vector(0,1,0));
+someHashTable.insert("row 3", vector(0,0,1));
+//someHashTable.insert("row 4", word(zh));
+outputFilePtr() <<someHashTable<< endl;
+Info << "文件写入成功" << endl;
+
+
+	return 0;
+
+}
+
+
+Make/files file contents：
+
+demo1A.C
+
+EXE = demo1A
+
+Make/options file contents：
+
+EXE_INC = \
+       -I$(FOAM_SRC)/finiteVolume/lnInclude \
+       -I$(FOAM_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+         -lfiniteVolume \ 
+         -lmeshTools
+
+Case:./postProcessing/custrmFile.txt file contents：
+
+开始写入：
+0 1 2 3 4 5
+
+3
+(
+row 1 (1 0 0)
+row 2 (0 1 0)
+row 3 (0 0 1)
+)
+
+3.
+
