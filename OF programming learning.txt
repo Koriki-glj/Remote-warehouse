@@ -149,5 +149,217 @@ row 2 (0 1 0)
 row 3 (0 0 1)
 )
 
-3.
+3.获得网格基本信息及计算每个边界patch的总面积：
 
+#include "fvCFD.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+	#include "createMesh.H"
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+	//1
+	label fcs = mesh.faces().size();
+	label pts = mesh.points().size();
+        Foam::Info <<"当前时间：" << runTime.timeName() <<endl
+	             <<"网格点共有："<<pts<<endl
+	             <<"网格面共有："<<fcs<<endl
+			  <<"网格单元共有：" <<mesh.C().size() << endl
+			  <<"内部网格面共有："<< mesh.Cf().size() <<endl
+			  <<"边界网格面共有："<<fcs-mesh.Cf().size() <<endl;
+			  Info <<nl;  
+	//2
+    for (label patchi =0; patchi<mesh.boundary().size(); patchi++)
+	{
+ Foam::Info<<"边界patch[" << patchi <<"]的name是：" <<mesh.boundary()[patchi].name() <<endl
+			<<"其包含网格面的数量是：" << mesh.boundary()[patchi].Cf().size() <<endl;
+			
+			double sum =0.0;
+			
+		for(label patchfacei=0; patchfacei<mesh.boundary()[patchi].Cf().size(); patchfacei++)
+		{
+
+			Foam::Info<<"其网格面patchface["<<patchfacei<<"]的面积矢量是："<<mesh.boundary()[patchi].Sf()[patchfacei]<<",其面积为："<<mag(mesh.boundary()[patchi].Sf()[patchfacei])<<endl;
+			
+			sum+=mag(mesh.boundary()[patchi].Sf()[patchfacei]);
+		}
+		Foam::Info<<"该patch["<<patchi<<"]上的网格面总面积是："<<sum<<endl;
+		Info <<nl;
+	}
+
+    return 0;
+}
+
+4.获取网格单元的体心坐标：
+
+#include "fvCFD.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+	#include "createMesh.H"
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+	//1
+   forAll(mesh.C(),celli)
+	{
+		Foam::Info<<"网格单元[" << celli <<"]的体心坐标是：" <<mesh.C()[celli] <<endl;
+	}
+
+    return 0;
+}
+
+
+5.获取owner,neighbour的信息（owner的信息获取不全，不知原因）：
+#include "fvCFD.H"
+
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+	#include "createMesh.H"
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+	//1
+            forAll(mesh.owner(),ocelli)
+	{
+		Foam::Info<<"总网格面[" << ocelli<<"]的owner网格单元的序号是：" <<mesh.owner()[ocelli] <<endl;
+	}
+	
+	     forAll(mesh.neighbour(),ncellI)
+	{
+		Foam::Info<<"内部网格面[" << ncellI <<"]的neighbour网格单元的序号是：" <<mesh.neighbour()[ncellI] <<endl;
+	}
+
+    return 0;
+}
+
+
+6.获取边界上的网格面与哪一个网格单元对应的信息：
+
+#include "fvCFD.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+	#include "createMesh.H"
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+	//1
+
+    for (label patchi =0; patchi<mesh.boundary().size(); patchi++)
+	{
+ Foam::Info<<"边界patch[" << patchi <<"]的name是：" <<mesh.boundary()[patchi].name() <<endl
+			<<"其包含网格面的数量是：" << mesh.boundary()[patchi].Cf().size() <<endl;
+			
+			
+			
+		for(label patchfacei=0; patchfacei<mesh.boundary()[patchi].Cf().size(); patchfacei++)
+		{
+          Foam::Info<<"边界patch[" << patchi <<"]上的网格面" <<patchfacei<<"与网格单元"<<mesh.boundary()[patchi].patch().faceCells()[patchfacei]<<"对应" <<endl;
+	
+		}
+		
+		Info <<nl;
+	}
+    return 0;
+}
+
+7.获取网格面，网格点，网格面中心节点坐标信息：
+
+#include "fvCFD.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+	#include "createMesh.H"
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+	//1
+
+	const faceList &fcs = mesh.faces();
+	const List<point> &pts = mesh.points();
+	const List<point> &cents = mesh.faceCentres();
+	forAll(fcs,facei)
+	{
+		Foam::Info<<"第["<<facei<<"]个网格面由该点集合组成："<<fcs[facei]<<endl;
+	}
+	Info<<nl<<nl;
+	forAll(pts,pointi)
+	{
+		Foam::Info<<"第["<<pointi<<"]个网格点的坐标是："<<pts[pointi]<<endl;
+	}
+	Info<<nl<<nl;
+	forAll(cents,celli)
+	{
+		Foam::Info<<"第["<<celli<<"]个网格面中心节点坐标信息是："<<cents[celli]<<endl;
+	}
+    return 0;
+}
+
+8.输出每个网格面的归属信息（边界面还是内部面），且输出该面上的许多信息（中心坐标，包含的网格点数量及点的坐标）
+
+
+#include "fvCFD.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+	#include "createMesh.H"
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+	//1
+	const faceList &fcs = mesh.faces();
+	const List<point> &pts = mesh.points();
+	const List<point> &cents = mesh.faceCentres();
+			  
+	forAll(fcs,facei)
+	{
+		if(facei<=mesh.Cf().size())
+		{
+			Foam::Info<<"网格面face["<<facei<<"]"<<"是内部面。"<<endl;
+		}
+		else
+		{
+			forAll(mesh.boundary(),patchi)
+			{
+				if((mesh.boundary()[patchi].start()<facei) && (facei<mesh.boundary()[patchi].start()+mesh.boundary()[patchi].Cf().size()))
+				{
+					Foam::Info<<"网格面face["<<facei<<"]"<<"在边界patch["<<patchi<<"]上"<<endl;
+					break;
+				}
+			}
+			
+		}
+		
+		Foam::Info<<"网格面face["<<facei<<"]的网格中心坐标是："<<cents[facei]<<endl
+		<<"其拥有网格点的数量是："<<fcs[facei].size()<<endl;
+		
+		Foam::Info<<"其网格点坐标是：";
+		forAll(fcs[facei],vertexi)
+		{
+			
+			Info<<pts[fcs[facei][vertexi]]<<",";
+		}
+		Foam::Info<<nl<<nl;
+	}
+    return 0;
+}
+
+9.
